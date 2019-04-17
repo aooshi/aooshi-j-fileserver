@@ -5,24 +5,22 @@
   <modelVersion>4.0.0</modelVersion>
   
   <groupId>org.aooshi.j</groupId>
-  <artifactId>fileserver</artifactId>
-  <version>1.0.0-SNAPSHOT</version>
-
-  <name>org.aooshi.j.fileserver</name>
-  <!-- FIXME change it to the project's website -->
-  <url>http://www.aooshi.org/link?n=org.aooshi.j.fileserver</url>
-
+  <artifactId>aooshi-j-fileserver</artifactId>
+  <version>1.0.0</version>
+  
+	<organization>
+		<name>aooshi.org</name>
+		<url>http://www.aooshi.org</url>
+	</organization>
+	<name>aooshi-j-util</name>
+	<url>http://www.aooshi.org/link?n=aooshi-j-fileserver</url>
+  
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <maven.compiler.source>1.8</maven.compiler.source>
     <maven.compiler.target>1.8</maven.compiler.target>
   </properties>
   
-	<organization>
-		<url>http://www.aooshi.org</url>
-		<name>Aooshi.org</name>
-	</organization>
-
 	<!-- spring boot基本环境 -->
 	<parent>
 		<groupId>org.springframework.boot</groupId>
@@ -61,7 +59,7 @@
 
 		<dependency>
 			<groupId>org.aooshi.j</groupId>
-			<artifactId>util</artifactId>
+			<artifactId>aooshi-j-util</artifactId>
 			<version>1.0.0-SNAPSHOT</version>
 		</dependency>
 		
@@ -86,7 +84,7 @@
   </dependencies>
 
 	<build>
-		<finalName>${project.artifactId}</finalName>
+		<finalName>${project.artifactId}.${project.version}</finalName>
 		<plugins>
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
