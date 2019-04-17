@@ -2,18 +2,17 @@
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-  <modelVersion>4.0.0</modelVersion>
-  
+  <modelVersion>4.0.0</modelVersion>  
   <groupId>org.aooshi.j</groupId>
   <artifactId>aooshi-j-fileserver</artifactId>
   <version>1.0.0</version>
+	<name>aooshi-j-fileserver</name>
+	<url>http://www.aooshi.org/link?n=aooshi-j-fileserver</url>
   
 	<organization>
 		<name>aooshi.org</name>
 		<url>http://www.aooshi.org</url>
 	</organization>
-	<name>aooshi-j-util</name>
-	<url>http://www.aooshi.org/link?n=aooshi-j-fileserver</url>
   
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -60,7 +59,7 @@
 		<dependency>
 			<groupId>org.aooshi.j</groupId>
 			<artifactId>aooshi-j-util</artifactId>
-			<version>1.0.0-SNAPSHOT</version>
+			<version>1.0.0</version>
 		</dependency>
 		
 		<!-- https://mvnrepository.com/artifact/javax.cache/cache-api -->
