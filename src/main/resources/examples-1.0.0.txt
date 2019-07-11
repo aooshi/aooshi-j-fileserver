@@ -1,0 +1,49 @@
+
+
+
+用户使用 (Token 授权)
+上传：  POST: /file/upload
+	bucket={xxx}
+	token={xxx}
+	path={xxx}  // 可选项，不输入则自动生成路径
+	
+访问：  GET:  /file/get?path={xxx}&token={xxx}&download=0&downname={xxx}
+	download: 为可选项，当为 1 时代表以资源下载方式处理，不设置或为0时则是以浏览方式处理
+	downname: 为可选项，download = 1 时，文件下载的名称，不设置则以默认路径名
+	fsatoken: 可选项，会话授权访问标识，从cookie获取
+
+===============================================
+
+控制使用 (Basic Auth 授权)
+
+POST: /control/delete
+	path={xxx}
+POST: /control/upload
+	bucket={xxx}
+	path={xxx}  // 可选项，不输入则自动生成路径
+GET:  /control/getaccesstoken?path={xxx},{xxx},{xxx},{xxx}&fsatoken={xxx}&ttl={xxx}
+GET:  /control/getuploadtoken?bucket={xxx},{xxx},{xxx},{xxx}
+	ttl: 可选项，授权超时时间，默认由服务配置定义
+	fsatoken: 可选项，会话授权标识, fsatoken存储于客户cookie, 同一fsatoken的token授权允许多次访问，随会话失效而失效
+
+================================================
+
+路径构成：
+	物理存储路径 + 桶名 + 存储路径(必需以 /为开始)
+    c://file/ + mybucket + /2017/00/11.jpg
+    c://file/ + mybucket + /af/ce/head.jpg
+
+存储路径：
+	
+   c://file/mybucket/2017/00/11.jpg
+   c://file/mybucket/af/ce/head.jpg
+   
+访问地址：
+	http://file.example.com/file/get?path=mybucket/2017/00/11.jpg&token={xxx}
+	http://file.example.com/file/get?path=mybucket/af/ce/head.jpg&token={xxx}
+
+
+
+
+
+
