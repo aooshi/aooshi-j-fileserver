@@ -5,6 +5,7 @@ import java.util.List;
 
 import javax.servlet.MultipartConfigElement;
 
+import org.aooshi.j.fileserver.filters.AccessAuthorizationFilter;
 import org.aooshi.j.fileserver.filters.BasicAuthorizationFilter;
 import org.aooshi.j.fileserver.filters.TokenAuthorizationFilter;
 import org.aooshi.j.fileserver.util.AppConfiguration;
@@ -13,8 +14,6 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.boot.web.servlet.MultipartConfigFactory;
 import org.springframework.context.annotation.Bean;
-
-//org.springframework.web.client.RestTemplate
 
 @SpringBootApplication
 public class FileServerApplication {
@@ -25,7 +24,6 @@ public class FileServerApplication {
 		
 		//LocalTokenCache.Test();
 	}
-	
 		
 	@Bean
 	public FilterRegistrationBean<BasicAuthorizationFilter> controlFilterRegistrationBean()
@@ -52,6 +50,19 @@ public class FileServerApplication {
         registrationBean.setUrlPatterns(urlPatterns); 
         return registrationBean;
 	}
+
+    @Bean
+    public FilterRegistrationBean<AccessAuthorizationFilter> accessFilterRegistrationBean()
+    {
+        FilterRegistrationBean<AccessAuthorizationFilter> registrationBean = new FilterRegistrationBean<AccessAuthorizationFilter>();
+        AccessAuthorizationFilter authorizationFilter = new AccessAuthorizationFilter();
+        registrationBean.setFilter(authorizationFilter);
+        //
+        List<String> urlPatterns = new ArrayList<String>();
+        urlPatterns.add("/a/*");
+        registrationBean.setUrlPatterns(urlPatterns);
+        return registrationBean;
+    }
 	
     @Bean
     public MultipartConfigElement multipartConfigElement() {

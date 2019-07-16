@@ -1,7 +1,9 @@
 package org.aooshi.j.fileserver.filters;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.Map;
 
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
@@ -13,15 +15,18 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.aooshi.j.fileserver.dao.UserImpl;
+import org.aooshi.j.fileserver.dao.DbUserImpl;
+import org.aooshi.j.fileserver.dao.FileUserImpl;
+import org.aooshi.j.fileserver.dao.IUser;
 import org.aooshi.j.fileserver.domain.User;
+import org.aooshi.j.fileserver.util.AppConfiguration;
 import org.aooshi.j.util.Base64Helper;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.support.WebApplicationContextUtils;
 
 public class BasicAuthorizationFilter implements Filter {
 	
-	private static HashMap<Integer,BasicAuthorizationUser> USER_MAP = new HashMap<Integer,BasicAuthorizationUser>();
+	private static Map<Integer,BasicAuthorizationUser> USER_MAP = Collections.synchronizedMap(new HashMap<Integer,BasicAuthorizationUser>());
  
 	@Override
 	public void destroy() {
@@ -91,16 +96,24 @@ public class BasicAuthorizationFilter implements Filter {
 		//
 		BasicAuthorizationUser basicAuthorizationUser = null;
 		long millisecond = System.currentTimeMillis();
+
 		//get
-		synchronized (USER_MAP)
-		{
-			basicAuthorizationUser = USER_MAP.get(uidnum);
-		}
+		basicAuthorizationUser = USER_MAP.get(uidnum);
+
 		//check and find
 		if (basicAuthorizationUser == null || millisecond > basicAuthorizationUser.getExpire())
 		{
-			WebApplicationContext webApplicationContext = WebApplicationContextUtils.getRequiredWebApplicationContext(servletContext);
-			UserImpl userImpl = webApplicationContext.getBean(UserImpl.class);
+			IUser userImpl = null;
+			//
+			if ("file".equals(AppConfiguration.singleton.getUserHandler()))
+			{
+				userImpl = new FileUserImpl();
+			}
+			else
+			{
+				WebApplicationContext webApplicationContext = WebApplicationContextUtils.getRequiredWebApplicationContext(servletContext);
+				userImpl = webApplicationContext.getBean(DbUserImpl.class);
+			}
 			//
 			User user = userImpl.findUserByUid(uidnum);
 			if (user != null)
@@ -111,10 +124,7 @@ public class BasicAuthorizationFilter implements Filter {
 				basicAuthorizationUser.setPwd(user.getPwd());
 				basicAuthorizationUser.setUid(uidnum);
 				//
-				synchronized (USER_MAP)
-				{
-					USER_MAP.put(uidnum, basicAuthorizationUser);
-				}
+				USER_MAP.put(uidnum, basicAuthorizationUser);
 			}
 			else
 			{

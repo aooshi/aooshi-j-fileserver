@@ -11,7 +11,8 @@ public class AppConfiguration {
 	
 	private String limitMaxRequestSize;
 	private String limitMaxFileSize;
-	
+	private String basePath;
+	private String userHandler;
 		
 	public String getLimitMaxRequestSize() {
 		return limitMaxRequestSize;
@@ -21,13 +22,20 @@ public class AppConfiguration {
 		return limitMaxFileSize;
 	}
 
+	public String getBasePath() {
+		return basePath;
+	}
+
+	public String getUserHandler() {
+		return userHandler;
+	}
+
 	private AppConfiguration()
 	{	
 		 Properties props = null;
 		 
 		 try {
-			props = PropertiesLoaderUtils
-			            .loadAllProperties("application.properties");
+			props = PropertiesLoaderUtils.loadAllProperties("application.properties");
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -37,8 +45,10 @@ public class AppConfiguration {
 			// fileserver.limit.maxrequestsize =10M
 			// fileserver.limit.maxfilesize =50M
 			 
-			this.limitMaxFileSize  =  props.getProperty("fileserver.limit.maxrequestsize");
-			this.limitMaxRequestSize =  props.getProperty("fileserver.limit.maxrequestsize");	        
+			this.limitMaxFileSize  =  props.getProperty("fileserver.limit.maxfilesize");
+			this.limitMaxRequestSize =  props.getProperty("fileserver.limit.maxrequestsize");
+			this.basePath = props.getProperty("basePath");
+			this.userHandler = props.getProperty("fileserver.user.handler");
 		 }
 	}
 }

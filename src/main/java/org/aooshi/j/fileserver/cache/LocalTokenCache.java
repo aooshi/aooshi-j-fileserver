@@ -28,7 +28,7 @@ public class LocalTokenCache implements ITokenCache
 	    Duration duration = new Duration(TimeUnit.SECONDS,TokenConfiguration.singleton.getExpire());
 	    //Duration duration = new Duration(TimeUnit.SECONDS,10);
 	    tokenConfig.setExpiryPolicyFactory(CreatedExpiryPolicy.factoryOf(duration));
-	    Cache<String, TokenInfo> cache = cacheManager.createCache("mayteam.jfileserver.token",tokenConfig);	 
+	    Cache<String, TokenInfo> cache = cacheManager.createCache("jfileserver.token",tokenConfig);
 	    return cache;
 	}
 	

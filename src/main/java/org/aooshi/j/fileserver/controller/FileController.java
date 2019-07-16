@@ -5,6 +5,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.aooshi.j.fileserver.util.FileUtils;
 import org.aooshi.j.util.PathHelper;
+import org.aooshi.j.util.StringHelper;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -67,6 +68,42 @@ public class FileController {
             downname = PathHelper.getFileNameByPath(path);
         }
                 
+        //fileName = new String(fileName.getBytes("iso8859-1"), "UTF-8");
+        FileUtils fu = new FileUtils();
+        fu.DownLoad(request, response, path, downname, download);
+    }
+
+    @ResponseBody
+    @GetMapping("/fileaccess")
+    public void Access(HttpServletRequest request, HttpServletResponse response) throws Exception {
+
+        // /a/bucket/path1/path2/filename
+        String requestURI = (String) request.getAttribute("RequestURI");
+        if (StringHelper.isEmpty(requestURI))
+        {
+            response.setCharacterEncoding("UTF-8");
+            response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+            response.getWriter().write("NOT_FOUND");
+            return;
+        }
+
+        //String path = request.getParameter("path");
+        String path = requestURI.substring(3);
+        String downloadStr = request.getParameter("download");//0 1
+        Integer download = 0;
+        if ("1".equals(downloadStr)) {
+            //1:下载，其他为显示
+            download = 1;
+        }
+        else if ("2".equals(downloadStr)) {
+            //2:显示
+            download = 2;
+        }
+        String downname = request.getParameter("downname");
+        if (null == downname || downname.equals("")) {
+            downname = PathHelper.getFileNameByPath(path);
+        }
+
         //fileName = new String(fileName.getBytes("iso8859-1"), "UTF-8");
         FileUtils fu = new FileUtils();
         fu.DownLoad(request, response, path, downname, download);

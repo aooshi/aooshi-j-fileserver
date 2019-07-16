@@ -16,6 +16,9 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -41,20 +44,72 @@ public class ControlController {
     public String Upload(MultipartFile file, HttpServletRequest request, HttpServletResponse response) throws Exception {
         String bucket = request.getParameter("bucket");
         String path = request.getParameter("path");
-        String fileDir = PathHelper.createSecondPath();
-        String result = "/" + bucket + "/" + fileDir + "/" + file.getOriginalFilename();
-        if (null != path && !path.equals("")) {
+        String suffix = "";
+
+        //
+        int lastIndex = file.getOriginalFilename().lastIndexOf('.');
+        if (lastIndex > 0 && lastIndex < file.getOriginalFilename().length())
+        {
+            response.setCharacterEncoding("UTF-8");
+            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            return "BAD_REQUEST Path suffix";
+        }
+        suffix = file.getOriginalFilename().substring(lastIndex);
+        if (suffix == "" || suffix == ".")
+        {
+            response.setCharacterEncoding("UTF-8");
+            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            return "BAD_REQUEST Path suffix";
+        }
+
+        //
+        String filedir = "";
+        String filename = "";
+
+        //
+        if (null != path && path.equals("") != false) {
+
+            char chr = path.charAt(0);
+            if (chr == '/' || chr == '\\' )
+            {
+                response.setCharacterEncoding("UTF-8");
+                response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                return "BAD_REQUEST Path";
+            }
+
             String regEx = "^\\/(\\w+\\/?)+\\/$";
             Pattern pattern = Pattern.compile(regEx);
             Matcher matcher = pattern.matcher(path);
             boolean rs = matcher.matches();
-            if (rs) {
-                fileDir = path;
-                result = "/" + bucket + fileDir + file.getOriginalFilename();
+            if (rs == false) {
+                response.setCharacterEncoding("UTF-8");
+                response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                return "BAD_REQUEST Path";
             }
+
+            //
+            String[] paths = path.split("/");
+            filename = paths[paths.length - 1];
+            filedir = "";
+            for(int i=0,l = paths.length - 1; i<l; i++)
+            {
+                filedir += paths[i];
+                if ((i == l) == false) {
+                    filedir += "/";
+                }
+            }
+            //suffix = suffix;
+        } else {
+            String[] paths = PathHelper.createSecondPath(suffix);
+            filedir = paths[0];
+            filename = paths[1];
+            suffix = paths[2];
         }
+
         FileUtils fu = new FileUtils();
-        fu.Upload(file.getInputStream(), bucket + "/" + fileDir, file.getOriginalFilename());
+        fu.Upload(file.getInputStream(), filedir, filename + suffix);
+
+        String result = bucket + "/" + filedir + "/" + filename + suffix;
         return result;
     }
 
