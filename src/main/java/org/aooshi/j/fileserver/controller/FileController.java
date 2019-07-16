@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.nio.file.Path;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -25,27 +26,45 @@ public class FileController {
     public String Upload(MultipartFile file, HttpServletRequest request, HttpServletResponse response) throws Exception {
         String bucket = request.getParameter("bucket");
         String path = request.getParameter("path");
+
+        if (file == null)
+        {
+            response.setCharacterEncoding("UTF-8");
+            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            return "No file";
+        }
+
         //原始文件扩展名
         String extension = PathHelper.getExtension(file.getOriginalFilename());
         //路径+随机名.扩展名
-        String filePath = PathHelper.getSecondPath(extension);      
-        //随机名.扩展名
-        String fileName = PathHelper.getFileNameByPath(filePath);
-        //路径
-        String fileDir=filePath.replace(fileName, "");
-        
-        String result = "/" + bucket + "/" + filePath;
-        if (null != path && !path.equals("")) {
+        String filePath = "";
+        //
+        if (StringHelper.isEmpty(path) == false) {
             String regEx = "^\\/(\\w+\\/?)+\\/$";
             Pattern pattern = Pattern.compile(regEx);
             Matcher matcher = pattern.matcher(path);
             boolean rs = matcher.matches();
-            if (rs) {
-                result = "/" + bucket +path+ fileName;
+            if (rs == false) {
+                response.setCharacterEncoding("UTF-8");
+                response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                return "Path invalid";
             }
+            filePath = path + extension;
+        } else {
+            filePath = PathHelper.getSecondPath(extension);
         }
+
+        //随机名.扩展名
+        String fileName = PathHelper.getFileNameByPath(filePath);
+        //路径
+        //String fileDir=filePath.replace(fileName, "");
+        String fileDir= PathHelper.getDirectoryByPath(filePath);
+        //
+        String result = "/" + bucket + "/" + filePath;
+
         FileUtils fu = new FileUtils();
         fu.Upload(file.getInputStream(), bucket + "/" + fileDir, fileName);
+
         return result;
     }
 

@@ -7,6 +7,7 @@ import org.aooshi.j.fileserver.entity.TokenInfo;
 import org.aooshi.j.fileserver.util.FileUtils;
 import org.aooshi.j.fileserver.util.TokenUtil;
 import org.aooshi.j.util.PathHelper;
+import org.aooshi.j.util.StringHelper;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -16,9 +17,6 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -44,39 +42,28 @@ public class ControlController {
     public String Upload(MultipartFile file, HttpServletRequest request, HttpServletResponse response) throws Exception {
         String bucket = request.getParameter("bucket");
         String path = request.getParameter("path");
-        String suffix = "";
 
-        //
-        int lastIndex = file.getOriginalFilename().lastIndexOf('.');
-        if (lastIndex > 0 && lastIndex < file.getOriginalFilename().length())
+        if (file == null)
         {
             response.setCharacterEncoding("UTF-8");
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-            return "BAD_REQUEST Path suffix";
+            return "No file";
         }
-        suffix = file.getOriginalFilename().substring(lastIndex);
-        if (suffix == "" || suffix == ".")
+
+
+        if (file == null)
         {
             response.setCharacterEncoding("UTF-8");
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-            return "BAD_REQUEST Path suffix";
+            return "No file";
         }
 
+        //原始文件扩展名
+        String extension = PathHelper.getExtension(file.getOriginalFilename());
+        //路径+随机名.扩展名
+        String filePath = "";
         //
-        String filedir = "";
-        String filename = "";
-
-        //
-        if (null != path && path.equals("") != false) {
-
-            char chr = path.charAt(0);
-            if (chr == '/' || chr == '\\' )
-            {
-                response.setCharacterEncoding("UTF-8");
-                response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-                return "BAD_REQUEST Path";
-            }
-
+        if (StringHelper.isEmpty(path) == false) {
             String regEx = "^\\/(\\w+\\/?)+\\/$";
             Pattern pattern = Pattern.compile(regEx);
             Matcher matcher = pattern.matcher(path);
@@ -84,32 +71,24 @@ public class ControlController {
             if (rs == false) {
                 response.setCharacterEncoding("UTF-8");
                 response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-                return "BAD_REQUEST Path";
+                return "Path invalid";
             }
-
-            //
-            String[] paths = path.split("/");
-            filename = paths[paths.length - 1];
-            filedir = "";
-            for(int i=0,l = paths.length - 1; i<l; i++)
-            {
-                filedir += paths[i];
-                if ((i == l) == false) {
-                    filedir += "/";
-                }
-            }
-            //suffix = suffix;
+            filePath = path + extension;
         } else {
-            String[] paths = PathHelper.createSecondPath(suffix);
-            filedir = paths[0];
-            filename = paths[1];
-            suffix = paths[2];
+            filePath = PathHelper.getSecondPath(extension);
         }
 
-        FileUtils fu = new FileUtils();
-        fu.Upload(file.getInputStream(), filedir, filename + suffix);
+        //随机名.扩展名
+        String fileName = PathHelper.getFileNameByPath(filePath);
+        //路径
+        //String fileDir=filePath.replace(fileName, "");
+        String fileDir= PathHelper.getDirectoryByPath(filePath);
+        //
+        String result = "/" + bucket + "/" + filePath;
 
-        String result = bucket + "/" + filedir + "/" + filename + suffix;
+        FileUtils fu = new FileUtils();
+        fu.Upload(file.getInputStream(), bucket + "/" + fileDir, fileName);
+
         return result;
     }
 
