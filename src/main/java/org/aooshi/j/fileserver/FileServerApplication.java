@@ -9,13 +9,19 @@ import org.aooshi.j.fileserver.filters.AccessAuthorizationFilter;
 import org.aooshi.j.fileserver.filters.BasicAuthorizationFilter;
 import org.aooshi.j.fileserver.filters.TokenAuthorizationFilter;
 import org.aooshi.j.fileserver.util.AppConfiguration;
+import org.aooshi.j.fileserver.util.JsonUserConfiguration;
+import org.aooshi.j.fileserver.util.MimeConfiguration;
+import org.aooshi.j.fileserver.util.PublicBucketConfiguration;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.boot.web.servlet.MultipartConfigFactory;
 import org.springframework.context.annotation.Bean;
+import org.springframework.scheduling.annotation.EnableScheduling;
+import org.springframework.scheduling.annotation.Scheduled;
 
 @SpringBootApplication
+@EnableScheduling
 public class FileServerApplication {
 
 	public static void main(String[] args) 
@@ -70,5 +76,14 @@ public class FileServerApplication {
         factory.setMaxFileSize(AppConfiguration.singleton.getLimitMaxFileSize());
         factory.setMaxRequestSize(AppConfiguration.singleton.getLimitMaxRequestSize());
         return factory.createMultipartConfig();
+    }
+
+    //配置更新（每分钟）
+    @Scheduled(fixedRate = 1000 * 60 * 1)
+    private void loadConfiguration()
+    {
+        PublicBucketConfiguration.instance.load();
+        JsonUserConfiguration.singleton.load();
+        MimeConfiguration.instance.load();
     }
 }
