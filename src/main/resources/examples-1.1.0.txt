@@ -40,13 +40,13 @@ GET:  /control/getuploadtoken?bucket={xxx},{xxx},{xxx},{xxx}
    
 访问地址：	
 	私桶下载
-	http://file.example.com/f/{bucket}{path}?token={xxx}&download=1
+	http://file.example.com/a/{bucket}{path}?token={xxx}&download=1
 	私桶访问
-	http://file.example.com/f/{bucket}{path}?token={xxx}
+	http://file.example.com/a/{bucket}{path}?token={xxx}
 	公桶下载
-	http://file.example.com/f/{bucket}{path}?download=1
+	http://file.example.com/a/{bucket}{path}?download=1
 	公桶访问
-	http://file.example.com/f/{bucket}{path}
+	http://file.example.com/a/{bucket}{path}
 
 ================================================
 	
