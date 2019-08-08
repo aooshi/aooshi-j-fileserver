@@ -2,11 +2,15 @@ package org.aooshi.j.fileserver.util;
 
 import org.aooshi.j.util.StringHelper;
 
+import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import java.io.*;
 import java.net.URLEncoder;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
 
 public class FileUtils {
     String fileBasePath = "";
@@ -83,48 +87,65 @@ public class FileUtils {
     }
 
     public void DownLoad(HttpServletRequest request, HttpServletResponse response, String filePath, String downname, Integer download) {
-        FileInputStream in = null;
+        RandomAccessFile in = null;
         OutputStream out = null;
         try {
 
             //mime
             int lastDot = filePath.lastIndexOf('.');
-            if (lastDot > 0 && lastDot < filePath.length() - 1)
-            {
+            if (lastDot > 0 && lastDot < filePath.length() - 1) {
                 String suffix = filePath.substring(lastDot + 1);
                 String mime = MimeConfiguration.instance.get(suffix.toLowerCase());
                 if (StringHelper.isEmpty(mime) == false) {
                     response.setContentType(mime);
                 }
-            }
-            else
-            {
+            } else {
                 ControllerUtils.OutputNotfound(request, response);
                 response.getOutputStream().print("Not Found");
                 return;
             }
-
-            //down
-            in = new FileInputStream(this.fileBasePath + "/" + filePath);
-            out = response.getOutputStream();
 
             if (download == 1) {
                 //下载
                 response.setHeader("Content-Disposition", "attachment;filename=" + URLEncoder.encode(downname, "UTF-8"));
             } else if (download == 2) {
                 //打开
-                //response.setCharacterEncoding("UTF-8");
-                //response.setContentType("text/plain; charset=utf-8");
                 response.setHeader("Content-Disposition", "inline;filename=" + URLEncoder.encode(downname, "UTF-8"));
             }
 
-            byte buffer[] = new byte[4096];
-            int len = 0;
-            while ((len = in.read(buffer)) > 0) {
-                out.write(buffer, 0, len);
-            }
+            //
+//            String range = request.getHeader("Range");
+//            int start = 0, end = 0;
+//            if(range != null && range.startsWith("bytes=")){
+//                String[] values = range.split("=")[1].split("-");
+//                start = Integer.parseInt(values[0]);
+//                if(values.length > 1){
+//                    end = Integer.parseInt(values[1]);
+//                }
+//            } else {
+//                range = null;
+//            }
+//
+//            //file
+//            File file = new File(this.fileBasePath + "/" + filePath);
+//            long fileLastModified = file.lastModified();
+//
+            //down
+            in = new RandomAccessFile(this.fileBasePath + "/" + filePath, "r");//只读模式
+            out = response.getOutputStream();
+//
+//            if (range != null) {
+//                this.DoDownLoadRange(request, response, in, out, start, end, fileLastModified);
+//            } else {
+//                this.DoDownLoad(request, response, in, out);
+//            }
+
+            this.DoDownLoad(request, response, in, out);
+
             in.close();
             out.close();
+
+
         } catch (FileNotFoundException e) {
 
             ControllerUtils.OutputNotfound(request, response);
@@ -151,6 +172,88 @@ public class FileUtils {
                     e.printStackTrace();
                 }
             }
+        }
+    }
+
+    private void DoDownLoadRange(HttpServletRequest request, HttpServletResponse response, RandomAccessFile in, OutputStream out,int start,int end, long fileLastModified) throws IOException {
+        //in.seek(0);
+        long contentLength = in.length();
+
+        //
+        int requestSize = 0;
+        if (end != 0 && end > start) {
+            requestSize = end - start + 1;
+        } else {
+            requestSize = Integer.MAX_VALUE;
+        }
+
+        //
+        Long time = contentLength + fileLastModified;
+        Date lastModified = new Date(time);
+        SimpleDateFormat sdf = new SimpleDateFormat("EEE, d MMM yyyy HH:mm:ss 'GMT'", Locale.US);
+        String lastModifiedString = sdf.format(lastModified);
+
+        //
+        response.setHeader("Accept-Ranges", "bytes");
+        response.setHeader("ETag", time.hashCode() + "");
+        response.setHeader("Last-Modified", lastModifiedString);
+
+        //断点续传的方式来返回
+        //206
+        response.setStatus(HttpServletResponse.SC_PARTIAL_CONTENT);
+
+        //
+//        long requestStart = 0, requestEnd = 0;
+//        String[] ranges = range.split("=");
+//        if(ranges.length > 1){
+//            String[] rangeDatas = ranges[1].split("-");
+//            requestStart = Integer.parseInt(rangeDatas[0]);
+//            if(rangeDatas.length > 1){
+//                requestEnd = Integer.parseInt(rangeDatas[1]);
+//            }
+//        }
+        long length = 0;
+        if (start > 0) {
+            length = end - start + 1;
+            response.setContentLengthLong(length);
+            response.setHeader("Content-Range", "bytes " + start + "-" + end + "/" + contentLength);
+        } else {
+            length = end - start;
+            response.setContentLengthLong(length);
+            response.setHeader("Content-Range", "bytes " + start + "-" + (contentLength - 1) + "/" + contentLength);
+        }
+
+        //
+        int needSize = requestSize;
+        in.seek(start);
+        while (needSize > 0) {
+            byte[] buffer = new byte[4096];
+            int len = in.read(buffer);
+            if (needSize < buffer.length) {
+                //out.write(buffer, 0, needSize);
+                out.write(buffer, 0, len);
+            } else {
+                out.write(buffer, 0, len);
+                if (len < buffer.length) {
+                    break;
+                }
+            }
+            needSize -= buffer.length;
+        }
+    }
+
+    private void DoDownLoad(HttpServletRequest request, HttpServletResponse response, RandomAccessFile in, OutputStream out) throws IOException {
+        in.seek(0);
+        long contentLength = in.length();
+
+        //
+        response.setContentLengthLong(contentLength);
+
+        //
+        byte buffer[] = new byte[4096];
+        int len = 0;
+        while ((len = in.read(buffer)) > 0) {
+            out.write(buffer, 0, len);
         }
     }
 

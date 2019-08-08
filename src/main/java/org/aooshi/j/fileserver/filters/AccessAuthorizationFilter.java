@@ -2,6 +2,7 @@ package org.aooshi.j.fileserver.filters;
 
 import org.aooshi.j.fileserver.entity.TokenInfo;
 import org.aooshi.j.fileserver.util.PublicBucketConfiguration;
+import org.aooshi.j.fileserver.util.TTLConfiguration;
 import org.aooshi.j.fileserver.util.TokenUtil;
 import org.aooshi.j.util.StringHelper;
 
@@ -69,7 +70,17 @@ public class AccessAuthorizationFilter implements Filter {
 		Boolean checkResult = false;
 		if (PublicBucketConfiguration.instance.contains(bucket) == true)
 		{
+			String bucketTTL = TTLConfiguration.instance.get(bucket);
+			if (bucketTTL != null && bucketTTL != "")
+			{
+				response.setHeader("Cache-Control", "max-age=" + bucketTTL);
+			}
 			return true;
+		}
+		else
+		{
+			response.setHeader("Cache-Control", "private");
+			response.setHeader("Pragma", "no-cache");
 		}
 
 		if (StringHelper.isEmpty(token))
