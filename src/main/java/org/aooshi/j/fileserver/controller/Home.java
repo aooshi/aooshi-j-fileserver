@@ -7,10 +7,14 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.aooshi.j.util.StringHelper;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.boot.system.ApplicationHome;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
 
 @RestController
 @EnableAutoConfiguration
@@ -20,7 +24,22 @@ public class Home {
 	@ResponseBody
 	public String index() {
 
-		return "Service ok";
+		String lastModifiedString = "";
+		try {
+			ApplicationHome h = new ApplicationHome(getClass());
+			long lastModified = h.getSource().lastModified();
+
+			Calendar cal = Calendar.getInstance();
+			cal.setTimeInMillis(lastModified);
+
+			SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+			lastModifiedString = formatter.format(cal.getTime());
+
+		}catch (Exception e){
+			lastModifiedString = "";
+		}
+
+		return "Service ok / " + lastModifiedString;
 	}
 
 	@GetMapping("/fsatoken")
