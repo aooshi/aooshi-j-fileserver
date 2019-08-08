@@ -86,7 +86,10 @@ public class FileController {
         if (null == downname || downname.equals("")) {
             downname = PathHelper.getFileNameByPath(path);
         }
-                
+
+        response.setHeader("Cache-Control", "private");
+        response.setHeader("Pragma", "no-cache");
+
         //fileName = new String(fileName.getBytes("iso8859-1"), "UTF-8");
         FileUtils fu = new FileUtils();
         fu.DownLoad(request, response, path, downname, download);
