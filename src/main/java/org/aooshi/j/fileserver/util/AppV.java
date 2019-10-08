@@ -54,7 +54,7 @@ public class AppV {
 		builder.append("LOCAL: " + formatter.format(now));
 		builder.append("\r\n");
 		//
-		if (line != null && "".equals(line) != false) {
+		if (line != null && "".equals(line) != true) {
 			builder.append(line);
 		}
 		//
