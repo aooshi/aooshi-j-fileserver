@@ -22,7 +22,7 @@ import java.util.Calendar;
 @EnableAutoConfiguration
 public class Home {
 
-	@GetMapping("/")
+	@GetMapping(value = "/", produces = "text/plain;charset=UTF-8")
 	@ResponseBody
 	public String index() {
 
