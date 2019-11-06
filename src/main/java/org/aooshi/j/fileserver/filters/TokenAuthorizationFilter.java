@@ -27,23 +27,29 @@ public class TokenAuthorizationFilter implements Filter {
 	@Override
 	public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
 			throws IOException, ServletException {
-		
+
+
 		HttpServletRequest req = (HttpServletRequest)request;
-		
+
+		if("OPTIONS".equalsIgnoreCase(req.getMethod())){
+			chain.doFilter(request, response);
+			//skip check
+			return;
+		}
+
 		String token = req.getParameter("token");
-				
 		boolean checkSuccess = StringHelper.isEmpty(token) == false &&
-				StringHelper.isLetterOrDigit(token) == true && 
+				StringHelper.isLetterOrDigit(token) == true &&
 				this.checkToken(req, token) == true;
-		
+
 		if (checkSuccess == true)
 		{
-			chain.doFilter(request, response);	
+			chain.doFilter(request, response);
 		}
 		else
 		{
 			HttpServletResponse httpResponse = (HttpServletResponse) response;
-			httpResponse.setCharacterEncoding("UTF-8");  
+			httpResponse.setCharacterEncoding("UTF-8");
 			//httpResponse.setContentType("application/json; charset=utf-8");
 			httpResponse.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
 				//

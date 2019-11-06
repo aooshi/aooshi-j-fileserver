@@ -107,7 +107,8 @@ public class BasicAuthorizationFilter implements Filter {
 			//
 			if ("file".equals(AppConfiguration.singleton.getUserHandler()))
 			{
-				userImpl = new FileUserImpl();
+				WebApplicationContext webApplicationContext = WebApplicationContextUtils.getRequiredWebApplicationContext(servletContext);
+				userImpl = webApplicationContext.getBean(org.aooshi.j.fileserver.dao.DbUserImpl.class);
 			}
 			else
 			{

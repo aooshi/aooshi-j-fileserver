@@ -7,10 +7,7 @@ import org.aooshi.j.fileserver.util.FileUtils;
 import org.aooshi.j.util.PathHelper;
 import org.aooshi.j.util.StringHelper;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.nio.file.Path;
@@ -22,13 +19,14 @@ import java.util.regex.Pattern;
 public class FileController {
 
     @ResponseBody
+    @CrossOrigin
     @PostMapping("/file/upload")
     public String Upload(MultipartFile file, HttpServletRequest request, HttpServletResponse response) throws Exception {
         String bucket = request.getParameter("bucket");
         String path = request.getParameter("path");
+        //String json = request.getParameter("json");
 
-        if (file == null)
-        {
+        if (file == null) {
             response.setCharacterEncoding("UTF-8");
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             return "No file";
@@ -58,15 +56,20 @@ public class FileController {
         String fileName = PathHelper.getFileNameByPath(filePath);
         //路径
         //String fileDir=filePath.replace(fileName, "");
-        String fileDir= PathHelper.getDirectoryByPath(filePath);
+        String fileDir = PathHelper.getDirectoryByPath(filePath);
         //
         String result = "/" + bucket + "/" + filePath;
 
         FileUtils fu = new FileUtils();
         fu.Upload(file.getInputStream(), bucket + "/" + fileDir, fileName);
 
+        String accept = request.getHeader("Accept").toLowerCase();
+        if (accept.indexOf("json") > -1 || accept.indexOf("javascript") > -1) {
+            return "\"" + result + "\"";
+        }
         return result;
     }
+
 
     @ResponseBody
     @GetMapping("/file/get")
@@ -77,8 +80,7 @@ public class FileController {
         if ("1".equals(downloadStr)) {
             //1:下载，其他为显示
             download = 1;
-        }
-        else if ("2".equals(downloadStr)) {
+        } else if ("2".equals(downloadStr)) {
             //2:显示
             download = 2;
         }
@@ -101,8 +103,7 @@ public class FileController {
 
         // /a/bucket/path1/path2/filename
         String requestURI = (String) request.getAttribute("RequestURI");
-        if (StringHelper.isEmpty(requestURI))
-        {
+        if (StringHelper.isEmpty(requestURI)) {
             response.setCharacterEncoding("UTF-8");
             response.setStatus(HttpServletResponse.SC_NOT_FOUND);
             response.getWriter().write("NOT_FOUND");
@@ -116,8 +117,7 @@ public class FileController {
         if ("1".equals(downloadStr)) {
             //1:下载，其他为显示
             download = 1;
-        }
-        else if ("2".equals(downloadStr)) {
+        } else if ("2".equals(downloadStr)) {
             //2:显示
             download = 2;
         }
