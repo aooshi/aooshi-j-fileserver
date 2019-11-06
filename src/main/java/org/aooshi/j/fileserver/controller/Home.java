@@ -5,6 +5,8 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.aooshi.j.fileserver.util.AppConfiguration;
+import org.aooshi.j.fileserver.util.AppV;
 import org.aooshi.j.util.StringHelper;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.system.ApplicationHome;
@@ -20,26 +22,14 @@ import java.util.Calendar;
 @EnableAutoConfiguration
 public class Home {
 
-	@GetMapping("/")
+	@GetMapping(value = "/", produces = "text/plain;charset=UTF-8")
 	@ResponseBody
 	public String index() {
 
-		String lastModifiedString = "";
-		try {
-			ApplicationHome h = new ApplicationHome(getClass());
-			long lastModified = h.getSource().lastModified();
+		String n = "File Server";
+		String v = AppV.GetApplicationV(n, "");
 
-			Calendar cal = Calendar.getInstance();
-			cal.setTimeInMillis(lastModified);
-
-			SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-			lastModifiedString = formatter.format(cal.getTime());
-
-		}catch (Exception e){
-			lastModifiedString = "";
-		}
-
-		return "Service ok / " + lastModifiedString;
+		return v;
 	}
 
 	@GetMapping("/fsatoken")
